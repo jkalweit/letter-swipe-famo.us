@@ -24,7 +24,7 @@ define(function(require, exports, module) {
         tileValue: 'X',
         backgroundProperties: {
             backgroundColor: 'blue',
-            border: '2px solid black',
+            border: '2px solid white',
             zIndex: 0
         },
         contentProperties: {

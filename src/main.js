@@ -5,14 +5,13 @@ define(function(require, exports, module) {
 	var mainContext = Engine.createContext();
 
     var size = mainContext.getSize();
-    var gameSize = size[0];
-    if(size[1] < size[0])
-        gameSize = size[1];
 
-    if(gameSize < 350) gameSize = 300;
+    var width = window.innerWidth;
+    var height = window.innerHeight;
+
 
     var appView = new AppView({
-        size: [gameSize, gameSize]
+        size: [width, height]
     });
 
     mainContext.add(appView);
