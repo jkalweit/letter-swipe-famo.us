@@ -17,6 +17,9 @@ define(function(require, exports, module) {
             }
         }));
 
+        this.tileSize = [this.options.size[0]/6, this.options.size[1]/6];
+
+        _createBackground.call(this);
         _createGameTiles.call(this);
         _createControlTiles.call(this);
 
@@ -27,9 +30,29 @@ define(function(require, exports, module) {
     GameView.prototype.constructor = GameView;
 
     GameView.DEFAULT_OPTIONS = {
-
+        size: [400, 400]
     };
 
+    function _createBackground() {
+
+        var size = [
+            this.tileSize[0]*4,
+            this.tileSize[1]*4
+        ];
+
+        this.backgroundSurface = new Surface({
+            size: size,
+            properties: {
+                backgroundColor: 'white'
+            }
+        });
+
+        this.backgroundModifier = new StateModifier({
+            transform: Transform.translate(this.tileSize[0], this.tileSize[1], 0)
+        });
+
+        this.add(this.backgroundModifier).add(this.backgroundSurface);
+    }
 
     function _createGameTiles() {
 
@@ -39,6 +62,7 @@ define(function(require, exports, module) {
             this.gameTiles.push([]);
             for(var i = 0; i < 4; i++) {
                 tile = new TileView({
+                    size: this.tileSize,
                     gameX: i,
                     gameY: j
                 });
@@ -74,13 +98,16 @@ define(function(require, exports, module) {
 
     function _createSwipeRightTile(row) {
         var tile = new TileView({
+            size: this.tileSize,
             content: '',
             backgroundProperties: {
                 backgroundColor: 'black',
                 border: '2px solid white'
             }
         });
-        tile.tileModifier.setTransform(Transform.translate(0, 100 + (row*100), 0.1), tile.options.transition);
+        tile.tileModifier.setTransform(
+            Transform.translate(0, this.tileSize[1] + (row*this.tileSize[1]), 0.1),
+            tile.options.transition);
         this.add(tile);
 
         tile.on('click', function() {
@@ -105,13 +132,14 @@ define(function(require, exports, module) {
 
     function _createSwipeLeftTile(row) {
         var tile = new TileView({
+            size: this.tileSize,
             content: '',
             backgroundProperties: {
                 backgroundColor: 'black',
                 border: '2px solid white'
             }
         });
-        tile.tileModifier.setTransform(Transform.translate(500, 100 + (row*100), 0.1), tile.options.transition);
+        tile.tileModifier.setTransform(Transform.translate(5*this.tileSize[0], this.tileSize[1] + (row*this.tileSize[1]), 0.1), tile.options.transition);
         this.add(tile);
 
         tile.on('click', function() {
@@ -136,13 +164,15 @@ define(function(require, exports, module) {
 
     function _createSwipeDownTile(col) {
         var tile = new TileView({
+            size: this.tileSize,
             content: '',
             backgroundProperties: {
                 backgroundColor: 'black',
                 border: '2px solid white'
             }
         });
-        tile.tileModifier.setTransform(Transform.translate(100 + (col*100), 0, 0.1), tile.options.transition);
+
+        tile.tileModifier.setTransform(Transform.translate(this.tileSize[0] + (col*this.tileSize[0]), 0, 0.1), tile.options.transition);
         this.add(tile);
 
         tile.on('click', function() {
@@ -169,13 +199,14 @@ define(function(require, exports, module) {
 
     function _createSwipeUpTile(col) {
         var tile = new TileView({
+            size: this.tileSize,
             content: '',
             backgroundProperties: {
                 backgroundColor: 'black',
                 border: '2px solid white'
             }
         });
-        tile.tileModifier.setTransform(Transform.translate(100 + (col*100), 500, 0.1), tile.options.transition);
+        tile.tileModifier.setTransform(Transform.translate(this.tileSize[0] + (col*this.tileSize[0]), 5*this.tileSize[1], 0.1), tile.options.transition);
         this.add(tile);
 
         tile.on('click', function() {
@@ -213,6 +244,7 @@ define(function(require, exports, module) {
     function _getNextTile() {
         var nextValue = _getRandomLetter.call(this);
         this.nextTile = new TileView({
+            size: this.tileSize,
             gameValue: nextValue,
             gameX: -1,
             gameY: -1

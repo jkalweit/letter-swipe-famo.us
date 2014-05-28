@@ -3,7 +3,17 @@ define(function(require, exports, module) {
     var AppView = require('views/AppView');
 
 	var mainContext = Engine.createContext();
-    var appView = new AppView();
+
+    var size = mainContext.getSize();
+    var gameSize = size[0];
+    if(size[1] < size[0])
+        gameSize = size[1];
+
+    if(gameSize < 350) gameSize = 300;
+
+    var appView = new AppView({
+        size: [gameSize, gameSize]
+    });
 
     mainContext.add(appView);
 });

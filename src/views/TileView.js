@@ -82,8 +82,9 @@ define(function(require, exports, module) {
         }
 
 
+
         this.tileModifier.setTransform(
-            Transform.translate(100 + (100*this.options.gameX), 100 + (100*this.options.gameY), 0), this.options.transition, callback);
+            Transform.translate(this.options.size[0] + (this.options.size[0]*this.options.gameX), this.options.size[1] + (this.options.size[1]*this.options.gameY), 0), this.options.transition, callback);
     };
 
 
