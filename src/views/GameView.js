@@ -36,12 +36,13 @@ define(function(require, exports, module) {
         this.gameTiles = [];
         var tile;
         for(var j = 0; j < 4; j++) {
+            this.gameTiles.push([]);
             for(var i = 0; i < 4; i++) {
                 tile = new TileView({
                     gameX: i,
                     gameY: j
                 });
-                this.gameTiles[i + (j*4)] = tile;
+                this.gameTiles[j].push(tile);
                 tile.update();
                 this.add(tile);
             }
@@ -65,14 +66,18 @@ define(function(require, exports, module) {
         _createSwipeDownTile.call(this, 2);
         _createSwipeDownTile.call(this, 3);
 
+        _createSwipeUpTile.call(this, 0);
+        _createSwipeUpTile.call(this, 1);
+        _createSwipeUpTile.call(this, 2);
+        _createSwipeUpTile.call(this, 3);
     }
 
     function _createSwipeRightTile(row) {
         var tile = new TileView({
-            content: '->',
+            content: '',
             backgroundProperties: {
                 backgroundColor: 'black',
-                border: '2px solid black'
+                border: '2px solid white'
             }
         });
         tile.tileModifier.setTransform(Transform.translate(0, 100 + (row*100), 0.1), tile.options.transition);
@@ -80,17 +85,17 @@ define(function(require, exports, module) {
 
         tile.on('click', function() {
 
-            for(var i = (row*4)+3; i >= row*4; i--) {
-                this.gameTiles[i].options.gameX++;
-                this.gameTiles[i].update();
-                if(i != (row*4) +3)
-                    this.gameTiles[i+1] = this.gameTiles[i];
-            }
-
             this.nextTile.options.gameX = 0;
             this.nextTile.options.gameY = row;
-            this.gameTiles[row*4] = this.nextTile;
-            this.nextTile.update();
+            var toRemove = this.gameTiles[row].pop();
+            toRemove.options.gameX++;
+            toRemove.update();
+            this.gameTiles[row].unshift(this.nextTile);
+
+            for(var i = 0; i < 4; i++) {
+                this.gameTiles[row][i].options.gameX = i;
+                this.gameTiles[row][i].update();
+            }
 
             _getNextTile.call(this);
 
@@ -100,10 +105,10 @@ define(function(require, exports, module) {
 
     function _createSwipeLeftTile(row) {
         var tile = new TileView({
-            content: '<-',
+            content: '',
             backgroundProperties: {
                 backgroundColor: 'black',
-                border: '2px solid black'
+                border: '2px solid white'
             }
         });
         tile.tileModifier.setTransform(Transform.translate(500, 100 + (row*100), 0.1), tile.options.transition);
@@ -111,20 +116,21 @@ define(function(require, exports, module) {
 
         tile.on('click', function() {
 
-            for(var i = (row*4); i <= (row*4)+3; i++) {
-                this.gameTiles[i].options.gameX--;
-                this.gameTiles[i].update();
-                this.gameTiles[i] = this.gameTiles[i+1];
-            }
-
             this.nextTile.options.gameX = 3;
             this.nextTile.options.gameY = row;
-            this.gameTiles[(row*4)+3] = this.nextTile;
-            this.nextTile.update();
+            var toRemove = this.gameTiles[row].shift();
+            toRemove.options.gameX--;
+            toRemove.update();
+            this.gameTiles[row].push(this.nextTile);
+
+            for(var i = 0; i < 4; i++) {
+                this.gameTiles[row][i].options.gameX = i;
+                this.gameTiles[row][i].update();
+            }
 
             _getNextTile.call(this);
 
-            console.log('left clicked!');
+            console.log('right clicked!');
         }.bind(this));
     }
 
@@ -133,7 +139,7 @@ define(function(require, exports, module) {
             content: '',
             backgroundProperties: {
                 backgroundColor: 'black',
-                border: '2px solid black'
+                border: '2px solid white'
             }
         });
         tile.tileModifier.setTransform(Transform.translate(100 + (col*100), 0, 0.1), tile.options.transition);
@@ -141,25 +147,56 @@ define(function(require, exports, module) {
 
         tile.on('click', function() {
 
-            for(var i = 3; i >= 0; i--) {
-                var index = col + (i*4);
-                this.gameTiles[index].options.gameY++;
-                this.gameTiles[index].update();
-                console.log('updated ' + index + ': ' + this.gameTiles[index].options.gameX + ',' + this.gameTiles[index].options.gameY);
-            }
-            for(var i = 3; i >= 1; i--) {
-                var index = col + (i*4);
-                this.gameTiles[index] = this.gameTiles[index - 4];
-            }
-
             this.nextTile.options.gameX = col;
             this.nextTile.options.gameY = 0;
-            this.gameTiles[col + (col*4)] = this.nextTile;
             this.nextTile.update();
+
+            var toMove = this.gameTiles[0].splice(col, 1, this.nextTile)[0];
+            toMove.options.gameY++;
+            toMove.update();
+
+            for(var i = 1; i < 4; i++) {
+                toMove = this.gameTiles[i].splice(col, 1, toMove)[0];
+                toMove.options.gameY++;
+                toMove.update();
+            }
 
             _getNextTile.call(this);
 
-            console.log('left clicked!');
+            console.log('down clicked!');
+        }.bind(this));
+    }
+
+    function _createSwipeUpTile(col) {
+        var tile = new TileView({
+            content: '',
+            backgroundProperties: {
+                backgroundColor: 'black',
+                border: '2px solid white'
+            }
+        });
+        tile.tileModifier.setTransform(Transform.translate(100 + (col*100), 500, 0.1), tile.options.transition);
+        this.add(tile);
+
+        tile.on('click', function() {
+
+            this.nextTile.options.gameX = col;
+            this.nextTile.options.gameY = 3;
+            this.nextTile.update();
+
+            var toMove = this.gameTiles[3].splice(col, 1, this.nextTile)[0];
+            toMove.options.gameY--;
+            toMove.update();
+
+            for(var i = 2; i >= 0; i--) {
+                toMove = this.gameTiles[i].splice(col, 1, toMove)[0];
+                toMove.options.gameY--;
+                toMove.update();
+            }
+
+            _getNextTile.call(this);
+
+            console.log('up clicked!');
         }.bind(this));
     }
 

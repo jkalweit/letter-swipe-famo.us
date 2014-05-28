@@ -75,10 +75,11 @@ define(function(require, exports, module) {
     }
 
     TileView.prototype.update = function(callback) {
-        if(this.options.gameValue)
+        if(this.options.gameValue) {
             this.contentSurface.setContent(this.options.gameValue);
-        else
-            this.contentSurface.setContent('[' + this.options.gameX + ',' + this.options.gameY + ']');
+        } else {
+            //this.contentSurface.setContent( ' [' + this.options.gameX + ',' + this.options.gameY + ']');
+        }
 
 
         this.tileModifier.setTransform(
