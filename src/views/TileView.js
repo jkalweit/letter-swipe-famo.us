@@ -16,12 +16,18 @@ define(function(require, exports, module) {
 
     TileView.prototype = Object.create(View.prototype);
     TileView.prototype.constructor = TileView;
+    TileView.prototype.isBlank = function () {
+        if(this.options.tileValue)
+            return true;
+        else
+            return false;
+    };
 
     TileView.DEFAULT_OPTIONS = {
         size: [100, 100],
         gameX: 0,
         gameY: 0,
-        tileValue: 'X',
+        tileValue: undefined,
         backgroundProperties: {
             backgroundColor: 'blue',
             border: '2px solid white',
@@ -75,8 +81,8 @@ define(function(require, exports, module) {
     }
 
     TileView.prototype.update = function(callback) {
-        if(this.options.gameValue) {
-            this.contentSurface.setContent(this.options.gameValue);
+        if(this.isBlank()) {
+            this.contentSurface.setContent(this.options.tileValue);
         } else {
             //this.contentSurface.setContent( ' [' + this.options.gameX + ',' + this.options.gameY + ']');
         }
