@@ -13,7 +13,7 @@ define(function(require, exports, module) {
     function TileView() {
         View.apply(this, arguments);
 
-        this.swipePos = 0;
+        this.needsUpdate = false;
 
         _createTile.call(this);
         _setListeners.call(this);
@@ -95,20 +95,23 @@ define(function(require, exports, module) {
     }
 
     function _handleSwipe() {
-        var sync = new GenericSync(
+        var syncX = new GenericSync(
             ['mouse', 'touch'],
             {direction : GenericSync.DIRECTION_X}
         );
 
-        this.backgroundSurface.pipe(sync);
+        this.backgroundSurface.pipe(syncX);
 
-        sync.on('update', function(data) {
-            this.swipePos += data.delta;
+        syncX.on('start', function(data) {
+            this.needsUpdate = true;
+        });
+
+        syncX.on('update', function(data) {
             this.tileModifier.setTransform(
-                Transform.translate(this.options.size[0] + (this.options.size[0]*this.options.gameX) + 5 + data.position, this.options.size[1] + (this.options.size[1]*this.options.gameY) + 5, 0));
+                Transform.translate((this.options.size[0]*this.options.gameX) + 5 + data.position, this.options.size[1] + (this.options.size[1]*this.options.gameY) + 5, 0));
         }.bind(this));
 
-        sync.on('end', function(data) {
+        syncX.on('end', function(data) {
             var velocity = data.velocity;
 
             if(data.position > this.options.posThreshold || velocity > this.options.velThreshold) {
@@ -116,7 +119,44 @@ define(function(require, exports, module) {
             }else if(data.position < -this.options.posThreshold || velocity < -this.options.velThreshold) {
                 this._eventOutput.emit('slideLeft');
             } else {
-                this.update();
+                if(this.needsUpdate) {
+                    this.update();
+                    this.needsUpdate = false;
+                }
+            }
+
+        }.bind(this));
+
+
+
+        var syncY = new GenericSync(
+            ['mouse', 'touch'],
+            {direction : GenericSync.DIRECTION_Y}
+        );
+
+        this.backgroundSurface.pipe(syncY);
+
+        syncY.on('start', function(data) {
+            this.needsUpdate = true;
+        });
+
+        syncY.on('update', function(data) {
+            this.tileModifier.setTransform(
+                Transform.translate((this.options.size[0]*this.options.gameX) + 5, this.options.size[1] + (this.options.size[1]*this.options.gameY) + 5 + data.position, 0));
+        }.bind(this));
+
+        syncY.on('end', function(data) {
+            var velocity = data.velocity;
+
+            if(data.position > this.options.posThreshold || velocity > this.options.velThreshold) {
+                this._eventOutput.emit('slideDown');
+            }else if(data.position < -this.options.posThreshold || velocity < -this.options.velThreshold) {
+                this._eventOutput.emit('slideUp');
+            } else {
+                if(this.needsUpdate) {
+                    this.update();
+                    this.needsUpdate = false;
+                }
             }
 
         }.bind(this));
@@ -132,7 +172,7 @@ define(function(require, exports, module) {
 
 
         this.tileModifier.setTransform(
-            Transform.translate(this.options.size[0] + (this.options.size[0]*this.options.gameX) + 5, this.options.size[1] + (this.options.size[1]*this.options.gameY) + 5, 0), this.options.transition, callback);
+            Transform.translate((this.options.size[0]*this.options.gameX) + 5, this.options.size[1] + (this.options.size[1]*this.options.gameY) + 5, 0), this.options.transition, callback);
     };
 
 

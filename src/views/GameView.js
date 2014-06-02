@@ -21,14 +21,14 @@ define(function(require, exports, module) {
             }
         }));
 
-        this.tileSize = [this.options.size[0]/6, this.options.size[1]/6];
+        this.tileSize = [this.options.size[0]/4, this.options.size[1]/5];
 
         this.matches = 0;
         this.isGameOver = false;
 
         _createBackground.call(this);
         _createGameTiles.call(this);
-        _createControlTiles.call(this);
+        //_createControlTiles.call(this);
 
         _getNextTile.call(this);
     }
@@ -46,7 +46,7 @@ define(function(require, exports, module) {
 
         var size = [
             this.tileSize[0]*4,
-            this.tileSize[1]*4
+            this.tileSize[1]*5
         ];
 
         this.backgroundSurface = new Surface({
@@ -58,7 +58,7 @@ define(function(require, exports, module) {
         });
 
         this.backgroundModifier = new StateModifier({
-            transform: Transform.translate(this.tileSize[0], this.tileSize[1], 0)
+            transform: Transform.translate(0, this.tileSize[1], 0)
         });
 
         this.add(this.backgroundModifier).add(this.backgroundSurface);
@@ -89,6 +89,20 @@ define(function(require, exports, module) {
             tile.on('slideLeft', (function() {
 
                 this.options.gameX--;
+                this.update();
+
+            }.bind(tile)));
+
+            tile.on('slideDown', (function() {
+
+                this.options.gameY++;
+                this.update();
+
+            }.bind(tile)));
+
+            tile.on('slideUp', (function() {
+
+                this.options.gameY--;
                 this.update();
 
             }.bind(tile)));
@@ -387,7 +401,7 @@ define(function(require, exports, module) {
         this.nextTile = new TileView({
             size: this.tileSize,
             tileValue: nextValue,
-            gameX: 4,
+            gameX: 3,
             gameY: -1,
             handleSwipe: true
         });
