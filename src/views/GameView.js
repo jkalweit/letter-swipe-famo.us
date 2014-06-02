@@ -14,7 +14,7 @@ define(function(require, exports, module) {
 
         this.add(new Surface({
             properties: {
-                backgroundColor: 'gray'
+                backgroundColor: 'white'
             }
         }));
 
@@ -48,7 +48,8 @@ define(function(require, exports, module) {
         this.backgroundSurface = new Surface({
             size: size,
             properties: {
-                backgroundColor: 'white'
+                backgroundColor: 'white',
+                borderRadius: '10px'
             }
         });
 
@@ -125,12 +126,12 @@ define(function(require, exports, module) {
             size: this.tileSize,
             content: '',
             backgroundProperties: {
-                backgroundColor: 'black',
-                border: '2px solid white'
+                backgroundColor: 'lightgreen',
+                border: '2px solid darkgreen'
             }
         });
         tile.tileModifier.setTransform(
-            Transform.translate(0, this.tileSize[1] + (row*this.tileSize[1]), 0.1),
+            Transform.translate(0 + 5, this.tileSize[1] + (row*this.tileSize[1]) + 5, 0.1),
             tile.options.transition);
         this.add(tile);
 
@@ -169,11 +170,11 @@ define(function(require, exports, module) {
             size: this.tileSize,
             content: '',
             backgroundProperties: {
-                backgroundColor: 'black',
-                border: '2px solid white'
+                backgroundColor: 'lightgreen',
+                border: '2px solid darkgreen'
             }
         });
-        tile.tileModifier.setTransform(Transform.translate(5*this.tileSize[0], this.tileSize[1] + (row*this.tileSize[1]), 0.1), tile.options.transition);
+        tile.tileModifier.setTransform(Transform.translate(5*this.tileSize[0] + 5, this.tileSize[1] + (row*this.tileSize[1]) + 5, 0.1), tile.options.transition);
         this.add(tile);
 
         tile.on('click', function() {
@@ -207,12 +208,12 @@ define(function(require, exports, module) {
             size: this.tileSize,
             content: '',
             backgroundProperties: {
-                backgroundColor: 'black',
-                border: '2px solid white'
+                backgroundColor: 'lightgreen',
+                border: '2px solid darkgreen'
             }
         });
 
-        tile.tileModifier.setTransform(Transform.translate(this.tileSize[0] + (col*this.tileSize[0]), 0, 0.1), tile.options.transition);
+        tile.tileModifier.setTransform(Transform.translate(this.tileSize[0] + (col*this.tileSize[0]) + 5, 0 + 5, 0.1), tile.options.transition);
         this.add(tile);
 
         tile.on('click', function() {
@@ -246,11 +247,11 @@ define(function(require, exports, module) {
             size: this.tileSize,
             content: '',
             backgroundProperties: {
-                backgroundColor: 'black',
-                border: '2px solid white'
+                backgroundColor: 'lightgreen',
+                border: '2px solid darkgreen'
             }
         });
-        tile.tileModifier.setTransform(Transform.translate(this.tileSize[0] + (col*this.tileSize[0]), 5*this.tileSize[1], 0.1), tile.options.transition);
+        tile.tileModifier.setTransform(Transform.translate(this.tileSize[0] + (col*this.tileSize[0]) + 5, 5*this.tileSize[1] + 5, 0.1), tile.options.transition);
         this.add(tile);
 
         tile.on('click', function() {

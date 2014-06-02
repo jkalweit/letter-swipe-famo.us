@@ -30,7 +30,9 @@ define(function(require, exports, module) {
         tileValue: undefined,
         backgroundProperties: {
             backgroundColor: 'blue',
-            border: '2px solid white',
+            border: '2px solid darkblue',
+            borderRadius: '10px',
+            boxShadow: '5px 5px 5px #888888',
             zIndex: 0
         },
         contentProperties: {
@@ -43,15 +45,15 @@ define(function(require, exports, module) {
             duration: 300,
             curve: 'easeOut'
         },
-        transform: Transform.translate(0, 0, 0)
+        transform: Transform.translate(5, 5, 0)
     };
 
     function _createTile() {
 
         this.tileModifier = new StateModifier({
-            size: this.options.size,
-            transform: this.options.transform
+            size: [this.options.size[0] -10, this.options.size[1] - 10]
         });
+
 
         this.backgroundSurface = new Surface({
             properties: this.options.backgroundProperties
@@ -72,6 +74,8 @@ define(function(require, exports, module) {
         var node = this.add(this.tileModifier);
         node.add(this.backgroundSurface);
         node.add(this.contentModifier).add(this.contentSurface);
+
+        this.tileModifier.setTransform(this.options.transform);
     }
 
     function _setListeners() {
@@ -90,7 +94,7 @@ define(function(require, exports, module) {
 
 
         this.tileModifier.setTransform(
-            Transform.translate(this.options.size[0] + (this.options.size[0]*this.options.gameX), this.options.size[1] + (this.options.size[1]*this.options.gameY), 0), this.options.transition, callback);
+            Transform.translate(this.options.size[0] + (this.options.size[0]*this.options.gameX) + 5, this.options.size[1] + (this.options.size[1]*this.options.gameY) + 5, 0), this.options.transition, callback);
     };
 
 
