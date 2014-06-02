@@ -4,14 +4,21 @@ define(function(require, exports, module) {
     var Transform     = require('famous/core/Transform');
     var StateModifier = require('famous/modifiers/StateModifier');
 
-    var TransitionableTransform = require("famous/transitions/TransitionableTransform");
+    var GenericSync     = require('famous/inputs/GenericSync');
+    var MouseSync       = require('famous/inputs/MouseSync');
+    var TouchSync       = require('famous/inputs/TouchSync');
+    GenericSync.register({'mouse': MouseSync, 'touch': TouchSync});
+
 
     function TileView() {
         View.apply(this, arguments);
 
+        this.swipePos = 0;
 
         _createTile.call(this);
         _setListeners.call(this);
+        if(this.options.handleSwipe)
+            _handleSwipe.call(this);
     }
 
     TileView.prototype = Object.create(View.prototype);
@@ -27,6 +34,9 @@ define(function(require, exports, module) {
         size: [100, 100],
         gameX: 0,
         gameY: 0,
+        handleSwipe: false,
+        posThreshold: 20,
+        velThreshold: 0.75,
         tileValue: undefined,
         backgroundProperties: {
             backgroundColor: 'blue',
@@ -81,6 +91,39 @@ define(function(require, exports, module) {
     function _setListeners() {
         this.backgroundSurface.on('click', function() {
             this._eventOutput.emit('click');
+        }.bind(this));
+    }
+
+    function _handleSwipe() {
+        var sync = new GenericSync(
+            ['mouse', 'touch'],
+            {direction : GenericSync.DIRECTION_X}
+        );
+
+        this.backgroundSurface.pipe(sync);
+
+        sync.on('update', function(data) {
+            this.swipePos += data.delta;
+            this.tileModifier.setTransform(
+                Transform.translate(this.options.size[0] + (this.options.size[0]*this.options.gameX) + 5 + this.swipePos, this.options.size[1] + (this.options.size[1]*this.options.gameY) + 5, 0));
+        }.bind(this));
+
+        sync.on('end', function(data) {
+            var velocity = data.velocity;
+
+            if(this.swipePos > this.options.posThreshold) {
+                if(velocity < -this.options.velThreshold) {
+                    this._eventOutput.emit('slideLeft');
+                } else {
+                    this._eventOutput.emit('slideRight');
+                }
+            } else {
+                if(velocity > this.options.velThreshold) {
+                    this._eventOutput.emit('slideRight');
+                } else {
+                    this._eventOutput.emit('slideLeft');
+                }
+            }
         }.bind(this));
     }
 

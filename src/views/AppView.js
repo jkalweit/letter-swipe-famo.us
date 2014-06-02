@@ -24,14 +24,16 @@ define(function(require, exports, module) {
     AppView.prototype.constructor = AppView;
 
     AppView.DEFAULT_OPTIONS = {
-        size: [250, 250]
+        size: [250, 250],
+        game: undefined
     };
 
     function _createGameView() {
 
 
         this.gameView = new GameView({
-            size: this.options.size
+            size: this.options.size,
+            game: this.options.game
         });
         this.gameModifier = new StateModifier();
 

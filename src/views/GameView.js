@@ -5,6 +5,9 @@ define(function(require, exports, module) {
     var StateModifier = require('famous/modifiers/StateModifier');
     var ImageSurface    = require('famous/surfaces/ImageSurface');
     var Timer    = require('famous/utilities/Timer');
+
+
+
     var FastClick       = require('famous/inputs/FastClick');
 
     var TileView         = require('views/TileView');
@@ -35,7 +38,8 @@ define(function(require, exports, module) {
 
     GameView.DEFAULT_OPTIONS = {
         size: [400, 400],
-        tileValues: ['D', 'U', 'K', 'E']
+        tileValues: ['D', 'U', 'K', 'E'],
+        game: undefined
     };
 
     function _createBackground() {
@@ -70,32 +74,28 @@ define(function(require, exports, module) {
                 size: this.tileSize,
                 gameX: i,
                 gameY: i,
-                tileValue: this.options.tileValues[i]
+                tileValue: this.options.tileValues[i],
+                handleSwipe: true
             });
             this.gameTiles[i][i] = tile;
+
+            tile.on('slideRight', (function() {
+
+                this.options.gameX++;
+                this.update();
+
+            }.bind(tile)));
+
+            tile.on('slideLeft', (function() {
+
+                this.options.gameX--;
+                this.update();
+
+            }.bind(tile)));
+
             tile.update();
             this.add(tile);
         }
-
-//        for(var j = 0; j < 4; j++) {
-//            this.gameTiles.push([]);
-//            for(var i = 0; i < 4; i++) {
-//                if(i === j)
-//                    tileValue = this.options.tileValues[i];
-//                else
-//                    tileValue = undefined;
-//                tile = new TileView({
-//                    size: this.tileSize,
-//                    gameX: i,
-//                    gameY: j,
-//                    tileValue: tileValue
-//                });
-//                this.gameTiles[j].push(tile);
-//                tile.update();
-//                this.add(tile);
-//            }
-//        }
-
     }
 
     function _createControlTiles() {
@@ -284,6 +284,8 @@ define(function(require, exports, module) {
 
 
 
+
+
     function _checkScore() {
         var grid = this.gameTiles;
         var matchedRows = [];
@@ -386,7 +388,8 @@ define(function(require, exports, module) {
             size: this.tileSize,
             tileValue: nextValue,
             gameX: 4,
-            gameY: -1
+            gameY: -1,
+            handleSwipe: true
         });
         this.nextTile.update();
         this.add(this.nextTile);
