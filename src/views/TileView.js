@@ -105,25 +105,20 @@ define(function(require, exports, module) {
         sync.on('update', function(data) {
             this.swipePos += data.delta;
             this.tileModifier.setTransform(
-                Transform.translate(this.options.size[0] + (this.options.size[0]*this.options.gameX) + 5 + this.swipePos, this.options.size[1] + (this.options.size[1]*this.options.gameY) + 5, 0));
+                Transform.translate(this.options.size[0] + (this.options.size[0]*this.options.gameX) + 5 + data.position, this.options.size[1] + (this.options.size[1]*this.options.gameY) + 5, 0));
         }.bind(this));
 
         sync.on('end', function(data) {
             var velocity = data.velocity;
 
-            if(this.swipePos > this.options.posThreshold) {
-                if(velocity < -this.options.velThreshold) {
-                    this._eventOutput.emit('slideLeft');
-                } else {
-                    this._eventOutput.emit('slideRight');
-                }
+            if(data.position > this.options.posThreshold || velocity > this.options.velThreshold) {
+                this._eventOutput.emit('slideRight');
+            }else if(data.position < -this.options.posThreshold || velocity < -this.options.velThreshold) {
+                this._eventOutput.emit('slideLeft');
             } else {
-                if(velocity > this.options.velThreshold) {
-                    this._eventOutput.emit('slideRight');
-                } else {
-                    this._eventOutput.emit('slideLeft');
-                }
+                this.update();
             }
+
         }.bind(this));
     }
 
