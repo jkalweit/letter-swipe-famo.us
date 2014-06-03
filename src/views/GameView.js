@@ -82,28 +82,40 @@ define(function(require, exports, module) {
             tile.on('slideRight', (function() {
 
                 this.options.gameX++;
-                this.update();
+                //if(this.syncsCompleted[0] && this.syncsCompleted[1]) {
+                    this.update();
+                    this.syncsCompleted = [false, false];
+                //}
 
             }.bind(tile)));
 
             tile.on('slideLeft', (function() {
 
                 this.options.gameX--;
-                this.update();
+                //if(this.syncsCompleted[0] && this.syncsCompleted[1]) {
+                    this.update();
+                    this.syncsCompleted = [false, false];
+                //}
 
             }.bind(tile)));
 
             tile.on('slideDown', (function() {
 
                 this.options.gameY++;
-                this.update();
+                if(this.syncsCompleted[0] && this.syncsCompleted[1]) {
+                    this.update();
+                    this.syncsCompleted = [false, false];
+                }
 
             }.bind(tile)));
 
             tile.on('slideUp', (function() {
 
                 this.options.gameY--;
-                this.update();
+                if(this.syncsCompleted[0] && this.syncsCompleted[1]) {
+                    this.update();
+                    this.syncsCompleted = [false, false];
+                }
 
             }.bind(tile)));
 

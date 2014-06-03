@@ -13,7 +13,9 @@ define(function(require, exports, module) {
     function TileView() {
         View.apply(this, arguments);
 
-        this.needsUpdate = false;
+        this.syncsCompleted = [false, false];
+        this.syncsDeltas = [0, 0];
+        this.syncsPositions = [0, 0];
 
         _createTile.call(this);
         _setListeners.call(this);
@@ -102,27 +104,32 @@ define(function(require, exports, module) {
 
         this.backgroundSurface.pipe(syncX);
 
-        syncX.on('start', function(data) {
-            this.needsUpdate = true;
-        });
+        syncX.on('start', (function(data) {
+            this.syncsCompleted[0] = false;
+        }).bind(this));
 
         syncX.on('update', function(data) {
-            this.tileModifier.setTransform(
-                Transform.translate((this.options.size[0]*this.options.gameX) + 5 + data.position, this.options.size[1] + (this.options.size[1]*this.options.gameY) + 5, 0));
+            this.syncsDeltas[0] = data.delta;
+            this.syncsPositions[0] = data.position;
         }.bind(this));
 
         syncX.on('end', function(data) {
             var velocity = data.velocity;
+
+            this.syncsCompleted[0] = true;
+
+            if(Math.abs(this.syncsPositions[0]) < Math.abs(this.syncsPositions[1]))
+                return;
 
             if(data.position > this.options.posThreshold || velocity > this.options.velThreshold) {
                 this._eventOutput.emit('slideRight');
             }else if(data.position < -this.options.posThreshold || velocity < -this.options.velThreshold) {
                 this._eventOutput.emit('slideLeft');
             } else {
-                if(this.needsUpdate) {
+                //if(this.syncsCompleted[0] && this.syncsCompleted[1]) {
                     this.update();
-                    this.needsUpdate = false;
-                }
+                    this.syncsCompleted = [false, false];
+                //}
             }
 
         }.bind(this));
@@ -136,26 +143,38 @@ define(function(require, exports, module) {
 
         this.backgroundSurface.pipe(syncY);
 
-        syncY.on('start', function(data) {
-            this.needsUpdate = true;
-        });
+        syncY.on('start', (function(data) {
+            this.syncsCompleted[1] = false;
+        }).bind(this));
 
         syncY.on('update', function(data) {
-            this.tileModifier.setTransform(
-                Transform.translate((this.options.size[0]*this.options.gameX) + 5, this.options.size[1] + (this.options.size[1]*this.options.gameY) + 5 + data.position, 0));
+            this.syncsDeltas[1] = data.delta;
+            this.syncsPositions[1] = data.position;
+            if(Math.abs(this.syncsPositions[0]) > Math.abs(this.syncsPositions[1])) {
+                this.tileModifier.setTransform(
+                    Transform.translate((this.options.size[0]*this.options.gameX)+ 5  + this.syncsPositions[0], this.options.size[1] + (this.options.size[1]*this.options.gameY) + 5, 0));
+            } else {
+                this.tileModifier.setTransform(
+                    Transform.translate((this.options.size[0]*this.options.gameX) + 5, this.options.size[1] + (this.options.size[1]*this.options.gameY) + 5 + this.syncsPositions[1], 0));
+            }
         }.bind(this));
 
         syncY.on('end', function(data) {
             var velocity = data.velocity;
+
+            this.syncsCompleted[1] = true;
+
+            if(Math.abs(this.syncsPositions[0]) > Math.abs(this.syncsPositions[1]))
+                return;
 
             if(data.position > this.options.posThreshold || velocity > this.options.velThreshold) {
                 this._eventOutput.emit('slideDown');
             }else if(data.position < -this.options.posThreshold || velocity < -this.options.velThreshold) {
                 this._eventOutput.emit('slideUp');
             } else {
-                if(this.needsUpdate) {
+                if(this.syncsCompleted[0] && this.syncsCompleted[1]) {
                     this.update();
-                    this.needsUpdate = false;
+                    this.syncsCompleted = [false, false];
                 }
             }
 
