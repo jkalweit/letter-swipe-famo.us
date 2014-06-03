@@ -5,6 +5,11 @@ define(function(require, exports, module) {
 
     function TileGame() {
 
+        this.matches = 0;
+        this.isGameOver = false;
+
+        this.tileValues = ['D', 'U', 'K', 'E'];
+
     }
 
 

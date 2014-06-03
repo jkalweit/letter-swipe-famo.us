@@ -14,8 +14,9 @@ define(function(require, exports, module) {
         View.apply(this, arguments);
 
         this.syncsCompleted = [false, false];
-        this.syncsDeltas = [0, 0];
         this.syncsPositions = [0, 0];
+        this.x = 0;
+        this.y = 0;
 
         _createTile.call(this);
         _setListeners.call(this);
@@ -109,7 +110,6 @@ define(function(require, exports, module) {
         }).bind(this));
 
         syncX.on('update', function(data) {
-            this.syncsDeltas[0] = data.delta;
             this.syncsPositions[0] = data.position;
         }.bind(this));
 
@@ -127,7 +127,7 @@ define(function(require, exports, module) {
                 this._eventOutput.emit('slideLeft');
             } else {
                 //if(this.syncsCompleted[0] && this.syncsCompleted[1]) {
-                    this.update();
+                    //this.update();
                     this.syncsCompleted = [false, false];
                 //}
             }
@@ -148,14 +148,13 @@ define(function(require, exports, module) {
         }).bind(this));
 
         syncY.on('update', function(data) {
-            this.syncsDeltas[1] = data.delta;
             this.syncsPositions[1] = data.position;
             if(Math.abs(this.syncsPositions[0]) > Math.abs(this.syncsPositions[1])) {
                 this.tileModifier.setTransform(
-                    Transform.translate((this.options.size[0]*this.options.gameX)+ 5  + this.syncsPositions[0], this.options.size[1] + (this.options.size[1]*this.options.gameY) + 5, 0));
+                    Transform.translate(this.x + this.syncsPositions[0] + 5, this.y + 5, 0));
             } else {
                 this.tileModifier.setTransform(
-                    Transform.translate((this.options.size[0]*this.options.gameX) + 5, this.options.size[1] + (this.options.size[1]*this.options.gameY) + 5 + this.syncsPositions[1], 0));
+                    Transform.translate(this.x + 5, this.y + this.syncsPositions[1] + 5, 0));
             }
         }.bind(this));
 
@@ -173,7 +172,7 @@ define(function(require, exports, module) {
                 this._eventOutput.emit('slideUp');
             } else {
                 if(this.syncsCompleted[0] && this.syncsCompleted[1]) {
-                    this.update();
+                    //this.update();
                     this.syncsCompleted = [false, false];
                 }
             }
@@ -181,19 +180,21 @@ define(function(require, exports, module) {
         }.bind(this));
     }
 
-    TileView.prototype.update = function(callback) {
-        if(this.isBlank()) {
-            this.contentSurface.setContent(this.options.tileValue);
-        } else {
-            //this.contentSurface.setContent( ' [' + this.options.gameX + ',' + this.options.gameY + ']');
-        }
+    TileView.prototype.move = function(x, y, callback) {
+        this.contentSurface.setContent(this.options.tileValue);
 
-
+        this.x = x;
+        this.y = y;
 
         this.tileModifier.setTransform(
-            Transform.translate((this.options.size[0]*this.options.gameX) + 5, this.options.size[1] + (this.options.size[1]*this.options.gameY) + 5, 0), this.options.transition, callback);
+            Transform.translate(x + 5, y + 5), this.options.transition, callback);
     };
 
+    TileView.prototype.moveToGamePos = function(callback) {
+
+        this.move(this.options.gameX * this.options.size[0], this.options.gameY * this.options.size[1], callback);
+
+    }
 
     module.exports = TileView;
 });

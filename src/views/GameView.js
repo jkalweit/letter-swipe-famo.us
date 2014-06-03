@@ -6,14 +6,16 @@ define(function(require, exports, module) {
     var ImageSurface    = require('famous/surfaces/ImageSurface');
     var Timer    = require('famous/utilities/Timer');
 
-
-
     var FastClick       = require('famous/inputs/FastClick');
 
+    var TileGame         = require('TileGame');
     var TileView         = require('views/TileView');
+
 
     function GameView() {
         View.apply(this, arguments);
+
+        this.game = new TileGame();
 
         this.add(new Surface({
             properties: {
@@ -23,23 +25,18 @@ define(function(require, exports, module) {
 
         this.tileSize = [this.options.size[0]/4, this.options.size[1]/5];
 
-        this.matches = 0;
-        this.isGameOver = false;
-
         _createBackground.call(this);
         _createGameTiles.call(this);
         //_createControlTiles.call(this);
 
-        _getNextTile.call(this);
+        //_getNextTile.call(this);
     }
 
     GameView.prototype = Object.create(View.prototype);
     GameView.prototype.constructor = GameView;
 
     GameView.DEFAULT_OPTIONS = {
-        size: [400, 400],
-        tileValues: ['D', 'U', 'K', 'E'],
-        game: undefined
+        size: [400, 400]
     };
 
     function _createBackground() {
@@ -64,46 +61,60 @@ define(function(require, exports, module) {
         this.add(this.backgroundModifier).add(this.backgroundSurface);
     }
 
+    function _canMoveTo(x, y) {
+        for(var i = 0; i < this.gameTiles.length; i++) {
+            if(this.gameTiles[i].options.gameX === x && this.gameTiles[i].options.gameY === y)
+                return false;
+        }
+
+        return true;
+    }
+
     function _createGameTiles() {
 
         this.gameTiles = [];
         var tile;
         for(var i = 0; i < 4; i++) {
-            this.gameTiles.push([]);
             tile = new TileView({
                 size: this.tileSize,
                 gameX: i,
                 gameY: i,
-                tileValue: this.options.tileValues[i],
+                tileValue: this.game.tileValues[i],
                 handleSwipe: true
             });
-            this.gameTiles[i][i] = tile;
+            this.gameTiles.push(tile);
+
+            var canMoveTo = _canMoveTo.bind(this);
 
             tile.on('slideRight', (function() {
 
-                this.options.gameX++;
-                //if(this.syncsCompleted[0] && this.syncsCompleted[1]) {
-                    this.update();
-                    this.syncsCompleted = [false, false];
-                //}
+                if(this.options.gameX < 3 && canMoveTo(this.options.gameX + 1, this.options.gameY)) {
+                    this.options.gameX++;
+                }
+                this.moveToGamePos();
+                this.syncsCompleted = [false, false];
 
             }.bind(tile)));
 
             tile.on('slideLeft', (function() {
 
-                this.options.gameX--;
+                if(this.options.gameX > 0 && canMoveTo(this.options.gameX - 1, this.options.gameY)) {
+                    this.options.gameX--;
+                }
                 //if(this.syncsCompleted[0] && this.syncsCompleted[1]) {
-                    this.update();
-                    this.syncsCompleted = [false, false];
+                this.moveToGamePos();
+                this.syncsCompleted = [false, false];
                 //}
 
             }.bind(tile)));
 
             tile.on('slideDown', (function() {
 
-                this.options.gameY++;
+                if(this.options.gameY < 3 && canMoveTo(this.options.gameX, this.options.gameY + 1)) {
+                    this.options.gameY++;
+                }
                 if(this.syncsCompleted[0] && this.syncsCompleted[1]) {
-                    this.update();
+                    this.moveToGamePos();
                     this.syncsCompleted = [false, false];
                 }
 
@@ -111,15 +122,17 @@ define(function(require, exports, module) {
 
             tile.on('slideUp', (function() {
 
-                this.options.gameY--;
+                if(this.options.gameY > 0 && canMoveTo(this.options.gameX, this.options.gameY - 1))
+                    this.options.gameY--;
+
                 if(this.syncsCompleted[0] && this.syncsCompleted[1]) {
-                    this.update();
+                    this.moveToGamePos();
                     this.syncsCompleted = [false, false];
                 }
 
             }.bind(tile)));
 
-            tile.update();
+            tile.moveToGamePos();
             this.add(tile);
         }
     }
@@ -404,7 +417,7 @@ define(function(require, exports, module) {
     }
 
     function _getRandomLetter() {
-        var letter = this.options.tileValues[_getRandomInt.call(this, 0, 3)];
+        var letter = this.game.tileValues[_getRandomInt.call(this, 0, 3)];
         return letter;
     }
 
@@ -422,7 +435,7 @@ define(function(require, exports, module) {
     }
 
     function _canPlayRow(y) {
-        if(this.isGameOver)
+        if(this.game.isGameOver)
             return false;
 
         for(var x = 0; x < 4; x++) {
@@ -434,7 +447,7 @@ define(function(require, exports, module) {
     };
 
     function _canPlayColumn(x) {
-        if(this.isGameOver)
+        if(this.game.isGameOver)
             return false;
 
         for(var y = 0; y < 4; y++) {
